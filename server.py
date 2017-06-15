@@ -24,6 +24,7 @@ import re
 import os
 import sys
 import codecs
+import tempfile
 from argparse import ArgumentParser
 
 import numpy as np
@@ -72,7 +73,7 @@ def annotate():
   doc = Document()
   parseFromDelimitedString(doc, msg)
 
-  input_file = "/tmp/annotator_in.conllu"
+  _, input_file = tempfile.mkstemp()
   f = codecs.open(input_file, 'w', encoding='utf-8', errors='ignore')
   for sentence in doc.sentence:
     f.write(_to_conllu(sentence))
@@ -80,6 +81,8 @@ def annotate():
 
   sents, probs, parseset = network.parse_online(input_file)
   _fill_parse_annotations(doc, probs, parseset)
+
+  os.remove(input_file)
 
   with io.BytesIO() as stream:
     writeToDelimitedString(doc, stream)
